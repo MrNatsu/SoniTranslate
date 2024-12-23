@@ -1,0 +1,32 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install pip==23.1.2
+        conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+        pip install -r requirements_base.txt -v
+        pip install -r requirements_extra.txt -v
+        pip install onnxruntime-gpu
+
+    - name: Install FFmpeg
+      run: sudo apt-get install ffmpeg
+
+    - name: Run tests
+      run: |
+        export YOUR_HF_TOKEN="YOUR_HUGGING_FACE_TOKEN"
+        python app_rvc.py --cpu_mode --verbosity_level debug
